@@ -52,7 +52,8 @@ subroutine read_sprintars_tstep_3d (buffer, idim, jdim, kdim, &
   do i = 1, idim
      do j = 1, jdim
         do k = 1, kdim
-           buffer(((i - 1) * jdim + (j - 1)) * kdim + k) = sdat(i, j, k)
+           ! buffer(((i - 1) * jdim + (j - 1)) * kdim + k) = sdat(i, j, k)
+           buffer(((k - 1) * jdim + (j - 1)) * idim + i) = sdat(i, j, k)
         end do
      end do
   end do
@@ -67,6 +68,41 @@ subroutine read_sprintars_tstep_3d (buffer, idim, jdim, kdim, &
   return 
 
 end subroutine read_sprintars_tstep_3d
+
+subroutine read_sprintars_tstep_2d (buffer, idim, jdim, &
+     eof, err)  bind ( C )
+  USE ISO_C_BINDING
+
+  integer (kind = c_int), intent(in)  :: idim, jdim
+  integer (kind = c_int), intent(out) :: err, eof
+  real (kind=c_float), dimension (idim * jdim), intent (out) :: buffer
+
+  character head*1024
+
+  real, allocatable :: sdat(:,:)
+
+  err = z'c0ffee'
+
+  allocate(sdat(idim, jdim))
+  read (11, err = 8, end = 9, iostat = err) head
+  read (11, err = 8, end = 9, iostat = err) sdat
+
+  do i = 1, idim
+     do j = 1, jdim
+        buffer((j - 1) * idim + i) = sdat(i, j)
+     end do
+  end do
+
+  deallocate(sdat)
+  eof = 0
+  return
+        
+8 write( *, * ) 'i/o error # ', err, ' on input file' 
+  stop 
+9 eof = 1
+  return 
+
+end subroutine read_sprintars_tstep_2d
 
 ! subroutine read_sprintars (idim, jdim, kdim )
 !   integer, intent(in)  :: idim,jdim,kdim

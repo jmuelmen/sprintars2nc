@@ -24,8 +24,13 @@ int convert_tstep(diag_t *diag)
      int eof, err;
      
      assert(buf != 0);
-     read_sprintars_tstep_3d(buf, &idim, &jdim, &kdim, 
-			     &eof, &err);
+     if (kdim == 1) {
+	  read_sprintars_tstep_2d(buf, &idim, &jdim, 
+				  &eof, &err);
+     } else {
+	  read_sprintars_tstep_3d(buf, &idim, &jdim, &kdim, 
+				  &eof, &err);
+     }
      /* did anything abnormal happen? */
      if (eof) {
 	  return EOF;
@@ -50,5 +55,6 @@ int convert_tstep(diag_t *diag)
      	  diag->val_mean /= idim * jdim * kdim;
 	  diag->tstep = step;
      }
+     write_nc(buf, step);
      return 0;
 }

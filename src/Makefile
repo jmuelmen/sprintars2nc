@@ -29,7 +29,7 @@ LD = gcc
 LDFLAGS =
 LIBS = -lgfortran $(NCLIBS)
 
-CSOURCES = main.c opts.c diag.c convert.c nc.c
+CSOURCES = main.c opts.c diag.c convert.c nc.c dims.c
 
 # compile all C files plus read_gtool.f90
 OBJECTS = $(CSOURCES:.c=.o) read_gtool.o
