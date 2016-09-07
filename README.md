@@ -20,10 +20,11 @@ tar xf sprintars.tar.gz
 ###Configuring
 
 Prerequisites
-1. NetCDF library and headers, v4.0.0 or higher
-1. Fortran compiler that supports the `CONVERT` specifier in `OPEN` and the
-`BIND (C)` interoperability keywords from the Fortran 2003 standard; `gfortran`
-v4 or higher is a good choice.
+
+   1. NetCDF library and headers, v4.0.0 or higher
+   1. Fortran compiler that supports the `CONVERT` specifier in `OPEN` and the
+   `BIND (C)` interoperability keywords from the Fortran 2003 standard;
+   `gfortran` v4 or higher is a good choice.
 
 If your NetCDF installation includes the `nc-config` utility, the `Makefile`
 will use it to determine the necessary compiler and linker flags.  Otherwise,
@@ -85,7 +86,8 @@ sprintars2nc -vvv -f nc4 -c -p --clobber \
 ```
 
 **Layout of the converted file:**
-```netcdf ps_3hr {
+```
+netcdf ps_3hr {
 dimensions:
         lat = 320 ;
         lon = 640 ;
