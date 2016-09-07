@@ -98,7 +98,7 @@ void usage (int code)
      exit(code);
 }
 
-long int strtotime (const char *time)
+time_t strtotime (const char *time)
 {
      struct tm tm;
      char *ret;
@@ -108,7 +108,7 @@ long int strtotime (const char *time)
 	  perror("Setting UTC timezone");
 	  exit(1);
      }
-     ret = strptime(time, "%Y-%m-%d %H:%M:%S %Z", &tm);
+     ret = strptime(time, "%Y-%m-%d %H:%M:%S", &tm);
      if (ret == 0) {
      	  fprintf(stderr, "time '%s' is not in the required format "
      		  "(try YYYY-mm-dd HH:MM:SS)\n", time);
@@ -130,7 +130,7 @@ void opts (int argc, char *argv[],
 	   char in_fname[1024], char out_fname[1024],
 	   char lonfile[1024], char latfile[1024],
 	   char pfile[1024], char tfile[1024],
-	   long int *t0, long int *tstep,
+	   time_t *t0, int *tstep,
 	   char varname[1024], char varunits[1024],
 	   dim_t *dimension, 
 	   nc_t *format, int *compress, int *progress, int *clobber)

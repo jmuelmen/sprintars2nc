@@ -38,8 +38,8 @@ int main (int argc, char *argv[])
      char strftime_buf[1024];
 
      /* direct time dimension specifications */
-     long int tstep;
-     long int t0;
+     int tstep;
+     time_t t0;
 
      /* options with their defaults */
      nc_t out_format;
@@ -51,7 +51,7 @@ int main (int argc, char *argv[])
      int n_lon = 0, n_lat = 0, n_p = 0, n_t = 0;
      float *vals_lon = 0, *vals_lat = 0, *vals_p = 0;
      float *vals_t_tmp = 0;
-     long int *vals_t = 0;
+     int *vals_t = 0;
      dim_t dimensions = DIM2;
 
      /* status flags for input file */
@@ -83,7 +83,7 @@ int main (int argc, char *argv[])
 	  if (t0 != -1 && tstep != -1) {
 	       strftime(strftime_buf, 1024, "%Y-%m-%d %H:%M:%S UTC",
 			gmtime(&t0));
-	       printf("t0: %ld (%s)\ttstep: %ld s", t0, strftime_buf,
+	       printf("t0: %ld (%s)\ttstep: %d s", t0, strftime_buf,
 		      tstep);
 	       printf("\n");
 	  }
@@ -108,7 +108,7 @@ int main (int argc, char *argv[])
 	  if (verbose()) 
 	       printf("reading t file %s\n", tfile);
 	  read_table(pfile, &vals_t_tmp, &n_t);
-	  vals_t = (long int *)malloc(sizeof(long int) * n_t);
+	  vals_t = (int *)malloc(sizeof(int) * n_t);
 	  for (int i = 0; i < n_t; vals_t[i] = vals_t_tmp[i++]);
 	  free(vals_t_tmp);
      } else {
@@ -157,7 +157,7 @@ int main (int argc, char *argv[])
 	  printf("\n");
 
      if (strlen(tfile) == 0) {
-	  vals_t = (long int *)malloc(sizeof(long int) * n_t);
+	  vals_t = (int *)malloc(sizeof(int) * n_t);
 	  for (int i = 0; i < n_t; vals_t[i] = i++ * tstep + t0);
      }
 
