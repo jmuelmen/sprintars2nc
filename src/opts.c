@@ -1,3 +1,22 @@
+/*   sprintars2nc converts SPRINTARS unformatted FORTRAN data to NetCDF 
+ *   Copyright (C) 2016 Johannes Muelmenstaedt 
+ 
+ *   This program is free software: you can redistribute it and/or modify 
+ *   it under the terms of the GNU General Public License as published by 
+ *   the Free Software Foundation, either version 3 of the License, or 
+ *   (at your option) any later version. 
+ 
+ *   This program is distributed in the hope that it will be useful, 
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+ *   GNU General Public License for more details. 
+ 
+ *   You should have received a copy of the GNU General Public License 
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ 
+ *   Bug reports and feature requests are welcome.  Contact me at
+ *   johannes.muelmenstaedt@uni-leipzig.de */
+
 #define _GNU_SOURCE 500
 #include <errno.h>
 #include <getopt.h>
@@ -16,25 +35,67 @@ int verbose ()
      return verbose_;
 }
 
-void usage ()
+const char *version ()
+{
+     static char version_[1024] = "sprintars2nc 1.0";
+     return version_;
+}
+
+void usage (int code)
 {
      /* reassign to stderr, since we're exiting anyway */
-     stdout = stderr;
-     printf("sprintars2nc [options] infile outfile\n\n");
+     if (code != 0) {
+	  stdout = stderr;
+     }
+     
+     printf("\nUsage: sprintars2nc [options] infile outfile\n\n");
      printf("options:\n");
-     printf("-c | --compress            (default: off)  "
+     printf("-c | --compress            (default: off)   "
             "enable compression (implies -f nc4)\n");
-     printf("-f | --format <nc2 | nc4>  (default: nc2)  "
+     printf("-f | --format nc2 | nc4    (default: nc2)   "
             "create NetCDF v2 or v4 file?\n");
-     printf("-p | --progress            (default: off)  "
+     printf("-h | --help                                 "
+            "print this message and exit\n");
+     printf("-p | --progress            (default: off)   "
             "enable progress bar\n");
-     printf("--clobber                  (default: off)  "
+     printf("-v | --verbose                              "
+            "increase verbosity; may be repeated\n");
+     printf("-v                                          "
+            "print version and exit\n");
+     printf("--clobber                  (default: off)   "
             "overwrite output file if it exists\n");
+     printf("--lonfile <file>           (mandatory)      "
+            "file specifying the longitude dim\n");
+     printf("--latfile <file>           (mandatory)      "
+            "file specifying the latitude dim\n");
+     printf("--pfile <file> | --sigmafile <file>         "
+            "file specifying the vertical dim\n"
+	    "                                            "
+	    " (mandatory for 3D fields)\n");
+     printf("--tfile <file> | --t0 <t0> --tstep <step>   "
+            "specification of the time dim\n"
+	    "                                            "
+	    "<t0>:   start date (as \n"
+	    "                                            "
+	    "        'YYYY-mm-dd HH:MM:SS' UTC)\n"
+	    "                                            "
+	    "<step>: time step in seconds\n");
+     printf("--varname <name>           (mandatory)      "
+            "variable name in NetCDF output file\n");
+     printf("--varunits <units>         (mandatory)      "
+            "variable units in NetCDF output file\n");
      printf("\n"
             "infile:    unformatted FORTRAN big-endian SPRINTARS output\n"
             "outfile:   NetCDF output file\n"
           );
-     exit(1);
+     printf("\n\nExample:\n"
+            "sprintars2nc -vvv -f nc4 -c -p --clobber \\\n"
+	    "  --lonfile GLON640.txt --latfile GGLA320.txt \\\n"
+	    "  --t0=\"2000-01-01 00:00:00\" --tstep=$((3 * 3600)) \\\n"
+	    "  --varname=ps --varunits=hPa \\\n"
+	    "  ps_3hr ps_3hr.nc\n");
+
+     exit(code);
 }
 
 long int strtotime (const char *time)
@@ -96,6 +157,7 @@ void opts (int argc, char *argv[],
 	       {"compress",  no_argument,       0,  'c' },
 	       {"progress",  no_argument,       0,  'p' },
 	       {"clobber",   no_argument,       0,  0 },
+	       {"help",      no_argument,       0,  'h' },
 	       {"lonfile",   required_argument, 0,  0 },
 	       {"latfile",   required_argument, 0,  0 },
 	       {"pfile",     required_argument, 0,  0 },
@@ -105,10 +167,11 @@ void opts (int argc, char *argv[],
 	       {"tstep",     required_argument, 0,  0 },
 	       {"varname",   required_argument, 0,  0 },
 	       {"varunits",  required_argument, 0,  0 },
-	       {"verbose",   required_argument, 0,  0 },
+	       {"verbose",   no_argument,       0,  'v' },
+	       {"version",   no_argument,       0,  0 },
 	       {0,           0,                 0,  0 }
 	  };
-	  const int c = getopt_long(argc, argv, "cf:pv",
+	  const int c = getopt_long(argc, argv, "cf:hpv",
 				    long_options, &option_index);
 	  if (c == -1)
 	       break;
@@ -129,7 +192,7 @@ void opts (int argc, char *argv[],
 			 fprintf(stderr,
 				 "You can only specify one of pfile | "
 				 "sigmafile\n");
-			 usage();
+			 usage(1);
 			 exit(1);
 		    }
 		    strncpy(pfile, optarg, 1024);
@@ -140,7 +203,7 @@ void opts (int argc, char *argv[],
 			 fprintf(stderr,
 				 "You can only specify one of pfile | "
 				 "sigmafile\n");
-			 usage();
+			 usage(1);
 			 exit(1);
 		    }
 		    strncpy(pfile, optarg, 1024);
@@ -169,10 +232,11 @@ void opts (int argc, char *argv[],
 				 "varunits") == 0) {
 		    strncpy(varunits, optarg, 1024);
 	       } else if (strcmp(long_options[option_index].name,
-				 "verbose") == 0) {
-		    verbose_++;
+				 "version") == 0) {
+		    printf("%s\n", version());
+		    exit(0);
 	       } else {
-		    usage();
+		    usage(1);
 		    exit(1);
 	       }
 	       break;
@@ -188,9 +252,13 @@ void opts (int argc, char *argv[],
 		    break;
 	       } else {
 		    fprintf(stderr, "unknown format %s\n", optarg);
-		    usage();
+		    usage(1);
 		    exit(1);
 	       }
+	       break;
+	  case 'h':
+	       usage(0);
+	       exit(0);
 	       break;
 	  case 'p':
 	       *progress = 1;
@@ -199,7 +267,7 @@ void opts (int argc, char *argv[],
 	       verbose_++;
 	       break;
 	  case '?':
-	       usage();
+	       usage(1);
 	       exit(1);
 	       break;
 	  default:
@@ -211,13 +279,13 @@ void opts (int argc, char *argv[],
      if (strlen(lonfile) == 0) {
 	  fprintf(stderr,
 		  "lonfile is a mandatory argument\n");
-	  usage();
+	  usage(1);
 	  exit(1);
      }
      if (strlen(latfile) == 0) {
 	  fprintf(stderr,
 		  "latfile is a mandatory argument\n");
-	  usage();
+	  usage(1);
 	  exit(1);
      }
 
@@ -225,13 +293,13 @@ void opts (int argc, char *argv[],
      if (strlen(varname) == 0) {
 	  fprintf(stderr,
 		  "varname is a mandatory argument\n");
-	  usage();
+	  usage(1);
 	  exit(1);
      }
      if (strlen(varunits) == 0) {
 	  fprintf(stderr,
 		  "varunits is a mandatory argument\n");
-	  usage();
+	  usage(1);
 	  exit(1);
      }
 
@@ -239,7 +307,7 @@ void opts (int argc, char *argv[],
      if ((*t0 != -1) != (*tstep != -1)) {
 	  fprintf(stderr,
 		  "tstep and t0 must be given together\n");
-	  usage();
+	  usage(1);
 	  exit(1);
      }
      
@@ -247,13 +315,13 @@ void opts (int argc, char *argv[],
      if ((*t0 != -1) == (strlen(tfile) != 0)) {
 	  fprintf(stderr,
 		  "either tfile or tstep/t0 must be given\n");
-	  usage();
+	  usage(1);
 	  exit(1);
      }
      
      /* process input and output file name */
      if (optind != argc - 2) {
-	  usage();
+	  usage(1);
 	  exit(1);
      }
      if (strlen(argv[optind]) < 1024 - 1) {

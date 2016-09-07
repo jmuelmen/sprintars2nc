@@ -1,3 +1,25 @@
+/*   sprintars2nc converts SPRINTARS unformatted FORTRAN data to NetCDF 
+ *   Copyright (C) 2016 Johannes Muelmenstaedt 
+ 
+ *   This program is free software: you can redistribute it and/or modify 
+ *   it under the terms of the GNU General Public License as published by 
+ *   the Free Software Foundation, either version 3 of the License, or 
+ *   (at your option) any later version. 
+ 
+ *   This program is distributed in the hope that it will be useful, 
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+ *   GNU General Public License for more details. 
+ 
+ *   You should have received a copy of the GNU General Public License 
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ 
+ *   Bug reports and feature requests are welcome.  Contact me at
+ *   johannes.muelmenstaedt@uni-leipzig.de */
+
+/* This file borrows heavily from the NetCDF4 example program
+ * http://www.unidata.ucar.edu/software/netcdf/docs/pres__temp__4D__wr_8c_source.html */
+
 #include <assert.h>
 #include <netcdf.h>
 #include <stdio.h>
@@ -29,7 +51,7 @@ void open_nc(const char *out_fname, nc_t format, int clobber,
      /* create file */
      nc_check(nc_create(out_fname,
 			(clobber ? NC_CLOBBER : NC_NOCLOBBER) |
-			(format == NC4 ? NC_NETCDF4 : 0),
+			((format == NC4 || compress > 0) ? NC_NETCDF4 : 0),
 			&ncid));
 
      /* Define the dimensions. The record dimension is defined to have

@@ -1,3 +1,22 @@
+!   sprintars2nc converts SPRINTARS unformatted FORTRAN data to NetCDF 
+!   Copyright (C) 2016 Toshi Takemura, Johannes Muelmenstaedt 
+!
+!   This program is free software: you can redistribute it and/or modify 
+!   it under the terms of the GNU General Public License as published by 
+!   the Free Software Foundation, either version 3 of the License, or 
+!   (at your option) any later version. 
+!
+!   This program is distributed in the hope that it will be useful, 
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+!   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+!   GNU General Public License for more details. 
+!
+!   You should have received a copy of the GNU General Public License 
+!   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+!
+!   Bug reports and feature requests are welcome.  Contact me at
+!   johannes.muelmenstaedt@uni-leipzig.de 
+
 subroutine open_sprintars ( fname_c, err )  bind ( C )
   USE ISO_C_BINDING
   
@@ -18,7 +37,7 @@ subroutine open_sprintars ( fname_c, err )  bind ( C )
      end if
   end do loop_string
    
-  write(*,*) TRIM(fname_fortran)
+  ! write(*,*) TRIM(fname_fortran)
 
   open (11, file=TRIM(fname_fortran), form='unformatted', status='old', &
        convert = 'big_endian', err = 8, iostat = err)
@@ -52,7 +71,6 @@ subroutine read_sprintars_tstep_3d (buffer, idim, jdim, kdim, &
   do i = 1, idim
      do j = 1, jdim
         do k = 1, kdim
-           ! buffer(((i - 1) * jdim + (j - 1)) * kdim + k) = sdat(i, j, k)
            buffer(((k - 1) * jdim + (j - 1)) * idim + i) = sdat(i, j, k)
         end do
      end do

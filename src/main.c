@@ -1,3 +1,22 @@
+/*   sprintars2nc converts SPRINTARS unformatted FORTRAN data to NetCDF 
+ *   Copyright (C) 2016 Johannes Muelmenstaedt 
+ 
+ *   This program is free software: you can redistribute it and/or modify 
+ *   it under the terms of the GNU General Public License as published by 
+ *   the Free Software Foundation, either version 3 of the License, or 
+ *   (at your option) any later version. 
+ 
+ *   This program is distributed in the hope that it will be useful, 
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+ *   GNU General Public License for more details. 
+ 
+ *   You should have received a copy of the GNU General Public License 
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ 
+ *   Bug reports and feature requests are welcome.  Contact me at
+ *   johannes.muelmenstaedt@uni-leipzig.de */
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,19 +69,21 @@ int main (int argc, char *argv[])
 	  &out_format, &compress, &progress, &clobber);
 
      if (verbose()) {
-	  printf("in: %s\nout: %s\nformat: %d\ncompress: %d\nprogress: %d\n"
-		 "clobber: %d\n",
-		 in_fname, out_fname, out_format, compress, progress,
-		 clobber);
+	  printf("\nin: %s\nout: %s\nformat: %s\ncompress: %d\n"
+		 "clobber: %s\n",
+		 in_fname, out_fname,
+		 (out_format == NC4 || compress > 0) ? "NetCDF4" : "NetCDF2",
+		 compress, 
+		 clobber ? "yes" : "no");
 	  
-	  printf("lon: %s\nlat: %s\np: %s\nt: %s\t",
+	  printf("lon: %s\nlat: %s\nlev: %s\nt: %s\t",
 		 lonfile, latfile,
 		 strlen(pfile) > 0 ? pfile : "2D field",
 		 strlen(tfile) > 0 ? tfile : "");
 	  if (t0 != -1 && tstep != -1) {
 	       strftime(strftime_buf, 1024, "%Y-%m-%d %H:%M:%S UTC",
 			gmtime(&t0));
-	       printf("t0: %ld (%s)\ttstep: %ld", t0, strftime_buf,
+	       printf("t0: %ld (%s)\ttstep: %ld s", t0, strftime_buf,
 		      tstep);
 	       printf("\n");
 	  }
@@ -80,7 +101,7 @@ int main (int argc, char *argv[])
      read_table(latfile, &vals_lat, &n_lat);
      if (strlen(pfile) != 0) {
 	  if (verbose()) 
-	       printf("reading p file %s\n", pfile);
+	       printf("reading lvl file %s\n", pfile);
 	  read_table(pfile, &vals_p, &n_p);
      }
      if (strlen(tfile) != 0) {
