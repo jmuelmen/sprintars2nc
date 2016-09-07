@@ -9,9 +9,10 @@ blah blah blah paragraph of text
 
 ## Running
 
-**Usage:**
+### Usage
 `sprintars2nc [options] infile outfile`
 
+### Options
 |Option                                        |Meaning|
 |:---                                          |:---|
 |`-c | --compress`            (default: off)   |enable compression (implies `-f nc4`)|
@@ -31,7 +32,6 @@ blah blah blah paragraph of text
 |`--varunits <units>`         (mandatory)      |variable units in NetCDF output file|
 
 infile:    unformatted FORTRAN big-endian SPRINTARS output
-
 outfile:   NetCDF output file
 
 **Example:**
@@ -45,10 +45,8 @@ sprintars2nc -vvv -f nc4 -c -p --clobber \
 
 ## Contact
 Johannes Mülmenstädt
-
 https://github.com/jmuelmen
 
 ## License
 GNU General License Version 3
-
-For more information, see [LICENSE](LICENSE)
+For more information, see LICENSE
